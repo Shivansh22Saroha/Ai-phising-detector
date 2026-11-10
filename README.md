@@ -145,7 +145,7 @@ pytest -v --tb=short
 ```bash
 docker build -t phishguard .
 docker run -d -p 8000:8000 --restart unless-stopped phishguard
-docker image ls phishguard          # image size: <fill in, expected ~400 MB>
+docker image ls phishguard          # image size: 413 MB (measured in CI)
 ```
 The image uses `python:3.11-slim` and installs only `requirements-serve.txt` (no MLflow, pandas or pytest).
 It runs as a non-root user and has a `HEALTHCHECK` on `/health`.
