@@ -47,7 +47,8 @@ jobs:
           docker logs pg; exit 1
 
       - name: Report image size
-        run: docker image ls phishguard --format "Image size: {{.Size}}"
+        run: |
+          docker image ls phishguard --format "Image size: {{.Size}}"
 
   # Bonus (CD): redeploy on Render after CI passes on main.
   # Add the deploy hook URL from Render (Settings -> Deploy Hook) as a repo secret
