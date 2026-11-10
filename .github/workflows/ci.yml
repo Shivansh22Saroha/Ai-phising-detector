@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  train-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download dataset (stratified 40k sample keeps CI fast)
+        run: python data/download_data.py --max-rows 40000
+
+      - name: Train baseline model
+        run: python train.py --model rf --n_estimators 50 --max_depth 10 --force_save
+
+      - name: Run tests
+        run: pytest -v --tb=short
+
+  docker-build:
+    needs: train-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build serving image
+        run: docker build -t phishguard .
+
+      - name: Run container and hit /health
+        run: |
+          docker run -d -p 8000:8000 --name pg phishguard
+          for i in $(seq 1 20); do curl -fs localhost:8000/health && exit 0; sleep 2; done
+          docker logs pg; exit 1
+
+      - name: Report image size
+        run: docker image ls phishguard --format "Image size: {{.Size}}"
+
+  # Bonus (CD): redeploy on Render after CI passes on main.
+  # Add the deploy hook URL from Render (Settings -> Deploy Hook) as a repo secret
+  # named RENDER_DEPLOY_HOOK. Without the secret this job is skipped.
+  deploy:
+    needs: docker-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+    steps:
+      - name: Trigger Render deploy
+        if: env.HOOK != ''
+        run: curl -fsS -X POST "$HOOK"

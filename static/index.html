@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PhishGuard</title>
+<style>
+  :root {
+    --bg: #f4f6f8; --card: #ffffff; --ink: #14202b; --muted: #5b6b7a; --line: #dde3e9;
+    --brand: #1f5fbf; --safe: #1d7a46; --safe-bg: #e6f4ec; --risk: #b42318; --risk-bg: #fdecea;
+    --mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f151b; --card: #17202a; --ink: #e7edf3; --muted: #93a3b3; --line: #2a3643;
+            --brand: #6ea8ff; --safe: #5fd494; --safe-bg: #12291d; --risk: #ff8a7a; --risk-bg: #33161280; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  main { max-width: 720px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { margin: 0; font-size: 28px; letter-spacing: -0.02em; }
+  h1 span { color: var(--brand); }
+  .sub { margin: 6px 0 28px; color: var(--muted); }
+  form { display: flex; gap: 8px; }
+  input { flex: 1; min-width: 0; padding: 12px 14px; font: 15px var(--mono); color: var(--ink);
+          background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+  input:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+  button { padding: 12px 20px; font-weight: 600; font-size: 15px; color: #fff; background: var(--brand);
+           border: 0; border-radius: 8px; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+  .examples { margin-top: 10px; font-size: 13px; color: var(--muted); }
+  .examples a { color: var(--brand); cursor: pointer; margin-right: 10px; font-family: var(--mono); }
+  .card { margin-top: 24px; padding: 22px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+  .verdict { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .badge { font-size: 22px; font-weight: 700; }
+  .host { font-family: var(--mono); color: var(--muted); word-break: break-all; }
+  .meter { height: 10px; margin: 14px 0 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .meter div { height: 100%; width: 0; transition: width .4s ease; }
+  .prob { font-size: 14px; color: var(--muted); }
+  .safe .badge { color: var(--safe); } .safe .meter div { background: var(--safe); }
+  .risk .badge { color: var(--risk); } .risk .meter div { background: var(--risk); }
+  .risk { background: var(--risk-bg); } .safe { background: var(--safe-bg); }
+  h2 { font-size: 15px; margin: 20px 0 8px; }
+  ul { margin: 0; padding-left: 20px; } li { margin: 6px 0; }
+  details { margin-top: 16px; font-size: 14px; }
+  summary { cursor: pointer; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-family: var(--mono); font-size: 13px; }
+  td { padding: 4px 0; border-bottom: 1px solid var(--line); } td:last-child { text-align: right; }
+  .error { color: var(--risk); }
+  footer { margin-top: 40px; font-size: 13px; color: var(--muted); }
+  footer a { color: var(--brand); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Phish<span>Guard</span></h1>
+  <p class="sub">Paste a link before you click it. A machine-learning model scores the domain, and simple rules check the rest of the link.</p>
+
+  <form id="form">
+    <input id="url" type="text" placeholder="https://example.com/login" autocomplete="off" spellcheck="false" required>
+    <button id="btn" type="submit">Check</button>
+  </form>
+  <div class="examples">Try:
+    <a data-url="https://www.wikipedia.org">wikipedia.org</a>
+    <a data-url="http://paypal.com.account-verify.security-check.ru/login">paypal.com.account-verify…</a>
+    <a data-url="https://metamask-usa-walet.godaddysites.com/">metamask-usa-walet…</a>
+  </div>
+
+  <section id="result" class="card" hidden>
+    <div class="verdict">
+      <div class="badge" id="badge"></div>
+      <div class="host" id="host"></div>
+    </div>
+    <div class="meter"><div id="bar"></div></div>
+    <div class="prob" id="prob"></div>
+    <h2>Tips</h2>
+    <ul id="tips"></ul>
+    <details>
+      <summary>Features the model saw</summary>
+      <table id="feats"></table>
+    </details>
+  </section>
+
+  <section id="err" class="card error" hidden></section>
+
+  <footer>CSL236 end-term project · <a href="/docs">API docs</a> · <a href="/health">health</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  function showError(msg) {
+    $("result").hidden = true;
+    $("err").hidden = false;
+    $("err").textContent = msg;
+  }
+
+  async function check(url) {
+    $("btn").disabled = true;
+    $("err").hidden = true;
+    try {
+      const res = await fetch("/predict-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      if (res.status === 422) {
+        const d = data.detail;
+        const msg = Array.isArray(d) ? d.map((e) => e.msg.replace(/^Value error, /, "")).join("; ") : d;
+        return showError("Rejected (422): " + msg);
+      }
+      if (!res.ok) return showError("Server error " + res.status);
+      render(data);
+    } catch (e) {
+      showError("Could not reach the server.");
+    } finally {
+      $("btn").disabled = false;
+    }
+  }
+
+  function render(d) {
+    const pct = Math.round(d.phishing_probability * 100);
+    const risky = d.is_phishing === 1;
+    const card = $("result");
+    card.className = "card " + (risky ? "risk" : "safe");
+    $("badge").textContent = risky ? "Likely phishing" : "Looks legitimate";
+    $("host").textContent = d.host;
+    $("bar").style.width = pct + "%";
+    $("prob").textContent = `Phishing probability: ${pct}% (flagged at ${Math.round(d.threshold * 100)}% or more)`;
+    $("tips").replaceChildren(...d.tips.map((t) => Object.assign(document.createElement("li"), { textContent: t })));
+    $("feats").replaceChildren(...Object.entries(d.features).map(([k, v]) => {
+      const tr = document.createElement("tr");
+      tr.append(Object.assign(document.createElement("td"), { textContent: k }),
+                Object.assign(document.createElement("td"), { textContent: v }));
+      return tr;
+    }));
+    card.hidden = false;
+  }
+
+  $("form").addEventListener("submit", (e) => { e.preventDefault(); check($("url").value.trim()); });
+  document.querySelectorAll(".examples a").forEach((a) =>
+    a.addEventListener("click", () => { $("url").value = a.dataset.url; check(a.dataset.url); }));
+</script>
+</body>
+</html>

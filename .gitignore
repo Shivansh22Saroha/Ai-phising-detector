@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+mlruns/
+.pytest_cache/
+.env
+# Raw dataset is >50 MB: fetch it with data/download_data.py instead of committing
+data/*.csv
+data/*.zip
+# mlflow.db and logs/predictions.jsonl (sample) may be committed on purpose

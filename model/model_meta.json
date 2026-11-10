@@ -1,0 +1,32 @@
+{
+  "algorithm": "hgb",
+  "params": {
+    "learning_rate": 0.05,
+    "max_iter": 600
+  },
+  "run_id": "e972513563634a9d828e669a70fe12eb",
+  "features": [
+    "host_length",
+    "num_subdomains",
+    "num_hyphens",
+    "num_digits",
+    "digit_ratio",
+    "is_ip",
+    "host_entropy",
+    "suspicious_keyword_count",
+    "tld_length",
+    "has_punycode",
+    "longest_label_length",
+    "is_free_hosting",
+    "is_risky_tld",
+    "vowel_ratio",
+    "max_consonant_run",
+    "digit_letter_switches"
+  ],
+  "accuracy": 0.852,
+  "precision": 0.8918,
+  "recall": 0.7,
+  "f1": 0.7844,
+  "roc_auc": 0.8671,
+  "train_seconds": 7.0779
+}
