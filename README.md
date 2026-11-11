@@ -117,6 +117,14 @@ so the committed model is always the best run. `--force_save` overrides this (us
 - F1 rather than accuracy is the selection metric because the classes are imbalanced (57/43) and both
   missed phishing (recall) and false alarms (precision) matter.
 
+### Walkthrough notebook
+
+[`notebooks/PhishGuard_Walkthrough.ipynb`](notebooks/PhishGuard_Walkthrough.ipynb) explains the whole ML pipeline step by
+step, with saved outputs, so it reads on GitHub without running anything. It covers the dataset, the EDA shortcut
+finding, cleaning, all 16 features, the three-model comparison, ROC curves, the confusion matrix, permutation importance,
+the threshold trade-off, error analysis, and the data contract in action. To run it:
+`pip install -r requirements.txt matplotlib notebook` then `jupyter notebook notebooks/PhishGuard_Walkthrough.ipynb`.
+
 ## 5. API
 
 | Route | Method | Purpose |
