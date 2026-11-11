@@ -192,12 +192,13 @@ def build_tips(url: str, feats: dict[str, float], pred: Prediction) -> list[str]
 
 
 # --------------------------------------------------------------------------- #
-@app.get("/", include_in_schema=False)
+# HEAD too: Render and uptime monitors probe with HEAD requests.
+@app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 def ui() -> FileResponse:
     return FileResponse(ROOT / "static" / "index.html")
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health() -> dict:
     return {"status": "ok", "model_loaded": MODEL is not None,
             "algorithm": META.get("algorithm"), "f1": META.get("f1")}

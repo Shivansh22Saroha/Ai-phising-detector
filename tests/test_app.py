@@ -34,6 +34,12 @@ def test_health():
     assert body["model_loaded"] is True
 
 
+def test_head_probe_allowed():
+    """Render / uptime monitors send HEAD requests; they must not get 405."""
+    assert client.head("/").status_code == 200
+    assert client.head("/health").status_code == 200
+
+
 # 2. UI loads -------------------------------------------------------------------
 def test_ui_loads():
     r = client.get("/")

@@ -7,7 +7,9 @@ model scores the link's hostname from 16 engineered features, and rule-based tip
 in the rest of the link. It ships as a production-style ML system: MLflow-tracked experiments, a validated
 FastAPI service, pytest suite, Docker image, GitHub Actions CI and a live deployment.
 
-**Live URL:** `<add after deploying>` · **API docs:** `<live URL>/docs`
+**Live URL:** https://ai-phising-detector-kgt4.onrender.com · **API docs:** https://ai-phising-detector-kgt4.onrender.com/docs
+
+> Hosted on Render's free tier: the instance sleeps after ~15 minutes idle, so the first request can take ~50 s.
 
 ---
 
@@ -177,7 +179,7 @@ python drift_check.py     # compares logged inputs' means with training mean/std
 1. Push the repo to GitHub.
 2. Render → **New → Web Service** → connect the repo → Runtime **Docker** → instance **Free**.
 3. Render sets `PORT` automatically and the Dockerfile listens on it. Set the health check path to `/health`.
-4. Render restarts crashed containers automatically (restart policy). Copy the public URL into this README.
+4. Render restarts crashed containers automatically (restart policy) and redeploys on every push to `main` (Auto-Deploy: On Commit).
 5. Optional CD: Settings → Deploy Hook → copy the URL → GitHub repo → Settings → Secrets → `RENDER_DEPLOY_HOOK`.
 
 ## 10. Screenshots
