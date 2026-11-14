@@ -9,6 +9,8 @@ FastAPI service, pytest suite, Docker image, GitHub Actions CI and a live deploy
 
 **Live URL:** https://ai-phising-detector-kgt4.onrender.com · **API docs:** https://ai-phising-detector-kgt4.onrender.com/docs
 
+**Report:** [docs/ShivanshSaroha_24CSU192.pdf](docs/ShivanshSaroha_24CSU192.pdf)
+
 > Hosted on Render's free tier: the instance sleeps after ~15 minutes idle, so the first request can take ~50 s.
 
 ---
