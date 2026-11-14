@@ -192,15 +192,26 @@ python drift_check.py     # compares logged inputs' means with training mean/std
 
 ## 10. Screenshots
 
+**Live deployment** (https://ai-phising-detector-kgt4.onrender.com)
+
+| Legitimate link | Phishing link |
+|---|---|
+| ![Live UI, legitimate](docs/screenshots/live_ui_legit.png) | ![Live UI, phishing](docs/screenshots/live_ui_phishing.png) |
+
+**Local run**
+
 | | |
 |---|---|
+| UI, invalid input → 422 | ![422](docs/screenshots/ui_422.png) |
 | UI, phishing verdict | ![UI](docs/screenshots/ui_phishing.png) |
 | UI, legitimate verdict | ![UI](docs/screenshots/ui_legit.png) |
-| UI, invalid input → 422 | ![422](docs/screenshots/ui_422.png) |
+| `/docs` (Swagger UI) | ![docs](docs/screenshots/docs.png) |
 | MLflow runs | ![MLflow](docs/screenshots/mlflow_runs.png) |
-| `/docs` | *add after deploying* |
-| `pytest -v` | *add* |
-| Green CI check | *add* |
+| `pytest -v` (22 passed) | ![pytest](docs/screenshots/pytest.png) |
+| Green CI (`gh run view`) | ![CI](docs/screenshots/ci_green.png) |
+
+The CI screenshot is the GitHub CLI's view of the latest run. Live status:
+[Actions tab](https://github.com/Shivansh22Saroha/Ai-phising-detector/actions).
 
 ## 11. Limitations and next steps
 
@@ -214,4 +225,10 @@ python drift_check.py     # compares logged inputs' means with training mean/std
 
 | Name | Roll no. | Contribution |
 |---|---|---|
-| Shivansh Saroha | 24CSU192 | `<fill in>` |
+| Shivansh Saroha | 24CSU192 | `<fill in: which areas below>` |
+| `<Member 2 name>` | `<roll no.>` | `<fill in>` |
+| `<Member 3 name>` | `<roll no.>` | `<fill in>` |
+
+Work areas to split between members: dataset choice and EDA (shortcut finding); feature engineering (`features.py`);
+training and MLflow experiments (`train.py`); FastAPI service, data contract and UI (`app.py`, `static/`);
+tests (`tests/`); Docker image; CI/CD workflow; Render deployment, logging and drift check; README, report and slides.
